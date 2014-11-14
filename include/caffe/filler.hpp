@@ -158,6 +158,21 @@ class XavierFiller : public Filler<Dtype> {
 };
 
 
+template <typename Dtype>
+class AthenaEntryPlugFiller : public Filler<Dtype> {
+ public:
+  explicit AthenaEntryPlugFiller(const FillerParameter& param) : Filler<Dtype>(param) {
+  }
+  virtual void Fill(Blob<Dtype>* blob) {
+    Dtype* data = blob->mutable_cpu_data();
+    const int count = blob->count();
+    std::ifstream input(this->filler_param_.filename().c_str(), std::ios::binary);
+    input.ignore(this->filler_param_.offset() * sizeof(Dtype));
+    input.read(reinterpret_cast<char*>(data), count * sizeof(Dtype));
+    input.close();
+  }
+};
+
 /**
  * @brief Get a specific filler from the specification given in FillerParameter.
  *
@@ -177,6 +192,8 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
     return new UniformFiller<Dtype>(param);
   } else if (type == "xavier") {
     return new XavierFiller<Dtype>(param);
+  } else if (type == "athena_entry_plug") {
+    return new AthenaEntryPlugFiller<Dtype>(param);
   } else {
     CHECK(false) << "Unknown filler name: " << param.type();
   }
