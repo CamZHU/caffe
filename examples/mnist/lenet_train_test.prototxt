@@ -10,10 +10,6 @@ layers {
     backend: ATHENA_ENTRY_PLUG
     batch_size: 256
   }
-  transform_param {
-    scale: 0.00390625
-  }
-  include: { phase: TRAIN }
 }
 layers {
   name: "conv1"

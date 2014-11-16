@@ -126,6 +126,7 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     datum.set_channels(1);
     datum.set_height(28);
     datum.set_width(28);
+    break;
   default:
     LOG(FATAL) << "Unknown database backend";
   }
@@ -172,52 +173,66 @@ void DataLayer<Dtype>::InternalThreadEntry() {
   }
   const int batch_size = this->layer_param_.data_param().batch_size();
 
-  for (int item_id = 0; item_id < batch_size; ++item_id) {
-    // get a blob
-    switch (this->layer_param_.data_param().backend()) {
-    case DataParameter_DB_LEVELDB:
-      CHECK(iter_);
-      CHECK(iter_->Valid());
-      datum.ParseFromString(iter_->value().ToString());
-      break;
-    case DataParameter_DB_LMDB:
-      CHECK_EQ(mdb_cursor_get(mdb_cursor_, &mdb_key_,
-              &mdb_value_, MDB_GET_CURRENT), MDB_SUCCESS);
-      datum.ParseFromArray(mdb_value_.mv_data,
-          mdb_value_.mv_size);
-      break;
-    default:
-      LOG(FATAL) << "Unknown database backend";
+  if (this->layer_param_.data_param().backend() == DataParameter_DB_ATHENA_ENTRY_PLUG) {
+    data_file_->read(reinterpret_cast<char*>(top_data), this->prefetch_data_.count() * sizeof(Dtype));
+    label_file_->read(reinterpret_cast<char*>(top_label), this->prefetch_label_.count() * sizeof(Dtype));
+    if (!data_file_->good()) {
+      CHECK(!label_file_->good());
+      data_file_->seekg(2 * sizeof(Dtype));
+      label_file_->seekg(2 * sizeof(Dtype));
+      data_file_->read(reinterpret_cast<char*>(top_data), this->prefetch_data_.count() * sizeof(Dtype));
+      label_file_->read(reinterpret_cast<char*>(top_label), this->prefetch_label_.count() * sizeof(Dtype));
+    } else {
+      CHECK(label_file_->good());
     }
-
-    // Apply data transformations (mirror, scale, crop...)
-    this->data_transformer_.Transform(item_id, datum, this->mean_, top_data);
-
-    if (this->output_labels_) {
-      top_label[item_id] = datum.label();
-    }
-
-    // go to the next iter
-    switch (this->layer_param_.data_param().backend()) {
-    case DataParameter_DB_LEVELDB:
-      iter_->Next();
-      if (!iter_->Valid()) {
-        // We have reached the end. Restart from the first.
-        DLOG(INFO) << "Restarting data prefetching from start.";
-        iter_->SeekToFirst();
-      }
-      break;
-    case DataParameter_DB_LMDB:
-      if (mdb_cursor_get(mdb_cursor_, &mdb_key_,
-              &mdb_value_, MDB_NEXT) != MDB_SUCCESS) {
-        // We have reached the end. Restart from the first.
-        DLOG(INFO) << "Restarting data prefetching from start.";
+  } else {
+    for (int item_id = 0; item_id < batch_size; ++item_id) {
+      // get a blob
+      switch (this->layer_param_.data_param().backend()) {
+      case DataParameter_DB_LEVELDB:
+        CHECK(iter_);
+        CHECK(iter_->Valid());
+        datum.ParseFromString(iter_->value().ToString());
+        break;
+      case DataParameter_DB_LMDB:
         CHECK_EQ(mdb_cursor_get(mdb_cursor_, &mdb_key_,
-                &mdb_value_, MDB_FIRST), MDB_SUCCESS);
+                &mdb_value_, MDB_GET_CURRENT), MDB_SUCCESS);
+        datum.ParseFromArray(mdb_value_.mv_data,
+            mdb_value_.mv_size);
+        break;
+      default:
+        LOG(FATAL) << "Unknown database backend";
       }
-      break;
-    default:
-      LOG(FATAL) << "Unknown database backend";
+
+      // Apply data transformations (mirror, scale, crop...)
+      this->data_transformer_.Transform(item_id, datum, this->mean_, top_data);
+
+      if (this->output_labels_) {
+        top_label[item_id] = datum.label();
+      }
+
+      // go to the next iter
+      switch (this->layer_param_.data_param().backend()) {
+      case DataParameter_DB_LEVELDB:
+        iter_->Next();
+        if (!iter_->Valid()) {
+          // We have reached the end. Restart from the first.
+          DLOG(INFO) << "Restarting data prefetching from start.";
+          iter_->SeekToFirst();
+        }
+        break;
+      case DataParameter_DB_LMDB:
+        if (mdb_cursor_get(mdb_cursor_, &mdb_key_,
+                &mdb_value_, MDB_NEXT) != MDB_SUCCESS) {
+          // We have reached the end. Restart from the first.
+          DLOG(INFO) << "Restarting data prefetching from start.";
+          CHECK_EQ(mdb_cursor_get(mdb_cursor_, &mdb_key_,
+                  &mdb_value_, MDB_FIRST), MDB_SUCCESS);
+        }
+        break;
+      default:
+        LOG(FATAL) << "Unknown database backend";
+      }
     }
   }
 }
