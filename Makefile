@@ -316,7 +316,8 @@ NVCCFLAGS += -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)
 MATLAB_CXXFLAGS := $(CXXFLAGS) -Wno-uninitialized
 LINKFLAGS += -fPIC $(COMMON_FLAGS) $(WARNINGS)
 LDFLAGS += $(foreach librarydir,$(LIBRARY_DIRS),-L$(librarydir)) \
-		$(foreach library,$(LIBRARIES),-l$(library))
+		$(foreach library,$(LIBRARIES),-l$(library)) \
+		$(foreach librarydir,$(LIBRARY_DIRS),"-Wl,-rpath=$(librarydir)")
 PYTHON_LDFLAGS := $(LDFLAGS) $(foreach library,$(PYTHON_LIBRARIES),-l$(library))
 
 # 'superclean' target recursively* deletes all files ending with an extension
