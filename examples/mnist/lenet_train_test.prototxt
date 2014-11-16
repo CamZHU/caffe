@@ -5,8 +5,9 @@ layers {
   top: "data"
   top: "label"
   data_param {
-    source: "examples/mnist/mnist_train_lmdb"
-    backend: LMDB
+    data_filename: "/home/cs_user/data/mnist/traindata.dat"
+    label_filename: "/home/cs_user/data/mnist/trainlabel.dat"
+    backend: ATHENA_ENTRY_PLUG
     batch_size: 256
   }
   transform_param {
