@@ -76,6 +76,7 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
         MDB_SUCCESS) << "mdb_cursor_get failed";
     break;
   case DataParameter_DB_ATHENA_ENTRY_PLUG:
+    LOG(INFO) << "Opening Athena Entry Plug " << this->layer_param_.data_param().data_filename() << " " << this->layer_param_.data_param().label_filename();
     data_file_ = new std::ifstream(this->layer_param_.data_param().data_filename().c_str(), ios::binary);
     label_file_ = new std::ifstream(this->layer_param_.data_param().label_filename().c_str(), ios::binary);
     data_file_->ignore(2 * sizeof(float));
@@ -121,6 +122,10 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   case DataParameter_DB_LMDB:
     datum.ParseFromArray(mdb_value_.mv_data, mdb_value_.mv_size);
     break;
+  case DataParameter_DB_ATHENA_ENTRY_PLUG:
+    datum.set_channels(1);
+    datum.set_height(28);
+    datum.set_width(28);
   default:
     LOG(FATAL) << "Unknown database backend";
   }
