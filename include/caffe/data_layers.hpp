@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <fstream>
 
 #include "boost/scoped_ptr.hpp"
 #include "hdf5.h"
@@ -123,6 +124,9 @@ class DataLayer : public BasePrefetchingDataLayer<Dtype> {
   MDB_txn* mdb_txn_;
   MDB_cursor* mdb_cursor_;
   MDB_val mdb_key_, mdb_value_;
+  // Athena Entry Plug
+  std::ifstream* data_file_;
+  std::ifstream* label_file_;
 };
 
 /**

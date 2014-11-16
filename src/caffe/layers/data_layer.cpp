@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "caffe/common.hpp"
 #include "caffe/data_layers.hpp"
@@ -27,6 +28,11 @@ DataLayer<Dtype>::~DataLayer<Dtype>() {
     mdb_txn_abort(mdb_txn_);
     mdb_env_close(mdb_env_);
     break;
+  case DataParameter_DB_ATHENA_ENTRY_PLUG:
+    label_file_->close();
+    data_file_->close();
+    delete label_file_;
+    delete data_file_;
   default:
     LOG(FATAL) << "Unknown database backend";
   }
@@ -68,6 +74,14 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     LOG(INFO) << "Opening lmdb " << this->layer_param_.data_param().source();
     CHECK_EQ(mdb_cursor_get(mdb_cursor_, &mdb_key_, &mdb_value_, MDB_FIRST),
         MDB_SUCCESS) << "mdb_cursor_get failed";
+    break;
+  case DataParameter_DB_ATHENA_ENTRY_PLUG:
+    data_file_ = new std::ifstream(this->layer_param_.data_param().data_filename().c_str(), ios::binary);
+    label_file_ = new std::ifstream(this->layer_param_.data_param().label_filename().c_str(), ios::binary);
+    data_file_->ignore(2 * sizeof(float));
+    label_file_->ignore(2 * sizeof(float));
+    CHECK(data_file_->good());
+    CHECK(label_file_->good());
     break;
   default:
     LOG(FATAL) << "Unknown database backend";

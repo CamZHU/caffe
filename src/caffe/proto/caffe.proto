@@ -408,6 +408,7 @@ message DataParameter {
   enum DB {
     LEVELDB = 0;
     LMDB = 1;
+    ATHENA_ENTRY_PLUG = 2;
   }
   // Specify the data source.
   optional string source = 1;
@@ -430,6 +431,8 @@ message DataParameter {
   // DEPRECATED. See TransformationParameter. Specify if we want to randomly mirror
   // data.
   optional bool mirror = 6 [default = false];
+  optional string data_filename = 9;
+  optional string label_filename = 10;
 }
 
 // Message that stores parameters used by DropoutLayer
