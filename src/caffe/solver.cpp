@@ -37,7 +37,7 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
   }
   // Scaffolding code
   InitTrainNet();
-  InitTestNets();
+  // InitTestNets();
   LOG(INFO) << "Solver scaffolding done.";
 }
 
