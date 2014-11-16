@@ -169,6 +169,7 @@ class AthenaEntryPlugFiller : public Filler<Dtype> {
     std::ifstream input(this->filler_param_.filename().c_str(), std::ios::binary);
     input.ignore(this->filler_param_.offset() * sizeof(Dtype));
     input.read(reinterpret_cast<char*>(data), count * sizeof(Dtype));
+    CHECK(input.good());
     input.close();
   }
 };
