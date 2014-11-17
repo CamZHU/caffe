@@ -177,6 +177,8 @@ void DataLayer<Dtype>::InternalThreadEntry() {
   if (this->layer_param_.data_param().backend() == DataParameter_DB_ATHENA_ENTRY_PLUG) {
     data_file_->read(reinterpret_cast<char*>(top_data), this->prefetch_data_.count() * sizeof(Dtype));
     if (!data_file_->good()) {
+      LOG(ERROR) << "Data wrap from beginning";
+      data_file_->clear();
       data_file_->seekg(2 * sizeof(Dtype));
       data_file_->read(reinterpret_cast<char*>(top_data), this->prefetch_data_.count() * sizeof(Dtype));
     }
