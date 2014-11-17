@@ -97,7 +97,7 @@ inline void setConvolutionDesc(cudnnConvolutionDescriptor_t* conv,
     cudnnTensor4dDescriptor_t bottom, cudnnFilterDescriptor_t filter,
     int pad_h, int pad_w, int stride_h, int stride_w) {
   CUDNN_CHECK(cudnnSetConvolutionDescriptor(*conv, bottom, filter,
-      pad_h, pad_w, stride_h, stride_w, 1, 1, CUDNN_CROSS_CORRELATION));
+      pad_h, pad_w, stride_h, stride_w, 1, 1, CUDNN_CONVOLUTION));
 }
 
 template <typename Dtype>

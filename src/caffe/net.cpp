@@ -510,11 +510,10 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
 
     if (i == 2) {
       std::ofstream whatever("caffe_out");
-      int size = layers_[i]->blobs()[1]->count();
+      int size = top_vecs_[i][0]->count();
       for (int j = 0; j < size; ++j) {
-        whatever << layers_[i]->blobs()[1]->cpu_data()[j] << ' ';
+        whatever << top_vecs_[i][0]->cpu_data()[j] << ' ';
       }
-      whatever << endl;
       whatever.close();
       exit(1);
     }

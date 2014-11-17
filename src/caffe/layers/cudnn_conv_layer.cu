@@ -1,5 +1,7 @@
 #ifdef USE_CUDNN
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 #include "caffe/filler.hpp"
 #include "caffe/layer.hpp"
@@ -18,6 +20,15 @@ void CuDNNConvolutionLayer<Dtype>::Forward_gpu(
     const Dtype* bottom_data = bottom[i]->gpu_data();
     Dtype* top_data = (*top)[i]->mutable_gpu_data();
     const Dtype* weight = this->blobs_[0]->gpu_data();
+
+    // const Dtype* haha = this->blobs_[1]->cpu_data();
+    // std::ofstream whatever("caffe_out");
+    // int size = this->blobs_[1]->count();
+    // for (int j = 0; j < size; ++j) {
+    //   whatever << haha[j] << ' ';
+    // }
+    // whatever.close();
+    // exit(1);
 
     // Forward through cuDNN in parallel over groups.
     for (int g = 0; g < this->group_; g++) {
