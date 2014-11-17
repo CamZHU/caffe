@@ -4,7 +4,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <fstream>
 
 #include "caffe/common.hpp"
 #include "caffe/layer.hpp"
@@ -504,7 +503,7 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
   CHECK_LT(end, layers_.size());
   Dtype loss = 0;
   for (int i = start; i <= end; ++i) {
-    LOG(ERROR) << "Forwarding " << layer_names_[i];
+    // LOG(ERROR) << "Forwarding " << layer_names_[i];
     layers_[i]->Reshape(bottom_vecs_[i], &top_vecs_[i]);
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], &top_vecs_[i]);
     loss += layer_loss;
@@ -570,18 +569,8 @@ void Net<Dtype>::BackwardFromTo(int start, int end) {
   CHECK_LT(start, layers_.size());
   for (int i = start; i >= end; --i) {
     if (layer_need_backward_[i]) {
-      LOG(ERROR) << "Backwarding " << layer_names_[i];
       layers_[i]->Backward(
           top_vecs_[i], bottom_need_backward_[i], &bottom_vecs_[i]);
-      if (i == 5) {
-        std::ofstream whatever("caffe_out");
-        int size = layers_[i]->blobs()[1]->count();
-        for (int j = 0; j < size; ++j) {
-          whatever << layers_[i]->blobs()[1]->cpu_diff()[j] << ' ';
-        }
-        whatever.close();
-        exit(1);
-      }
       if (debug_info_) { BackwardDebugInfo(i); }
     }
   }
