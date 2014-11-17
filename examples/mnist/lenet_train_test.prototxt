@@ -19,6 +19,7 @@ layers {
   blobs_lr: 1
   blobs_lr: 1
   convolution_param {
+    engine: CUDNN
     num_output: 16
     kernel_size: 5
     stride: 1

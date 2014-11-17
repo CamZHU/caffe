@@ -508,11 +508,11 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
     layers_[i]->Reshape(bottom_vecs_[i], &top_vecs_[i]);
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], &top_vecs_[i]);
 
-    if (i == 0) {
+    if (i == 2) {
       std::ofstream whatever("caffe_out");
-      int size = top_vecs_[i][1]->count();
+      int size = layers_[i]->blobs()[1]->count();
       for (int j = 0; j < size; ++j) {
-        whatever << top_vecs_[i][0]->cpu_data()[j] << ' ';
+        whatever << layers_[i]->blobs()[1]->cpu_data()[j] << ' ';
       }
       whatever << endl;
       whatever.close();
