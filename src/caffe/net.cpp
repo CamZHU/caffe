@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <fstream>
 
 #include "caffe/common.hpp"
 #include "caffe/layer.hpp"
@@ -503,9 +504,20 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
   CHECK_LT(end, layers_.size());
   Dtype loss = 0;
   for (int i = start; i <= end; ++i) {
-    // LOG(ERROR) << "Forwarding " << layer_names_[i];
+    LOG(ERROR) << "Forwarding " << layer_names_[i];
     layers_[i]->Reshape(bottom_vecs_[i], &top_vecs_[i]);
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], &top_vecs_[i]);
+
+    if (i == 0) {
+      std::ofstream whatever("caffe_out");
+      int size = top_vecs_[i][1]->count();
+      for (int j = 0; j < size; ++j) {
+        whatever << top_vecs_[i][0]->cpu_data()[j] << ' ';
+      }
+      whatever << endl;
+      whatever.close();
+      exit(1);
+    }
     loss += layer_loss;
     if (debug_info_) { ForwardDebugInfo(i); }
   }
