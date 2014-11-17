@@ -126,7 +126,6 @@ class DataLayer : public BasePrefetchingDataLayer<Dtype> {
   MDB_val mdb_key_, mdb_value_;
   // Athena Entry Plug
   std::ifstream* data_file_;
-  std::ifstream* label_file_;
 };
 
 /**

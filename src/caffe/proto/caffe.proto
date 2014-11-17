@@ -432,7 +432,7 @@ message DataParameter {
   // data.
   optional bool mirror = 6 [default = false];
   optional string data_filename = 9;
-  optional string label_filename = 10;
+  optional uint32 type = 10;
 }
 
 // Message that stores parameters used by DropoutLayer

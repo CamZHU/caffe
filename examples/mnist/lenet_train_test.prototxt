@@ -1,16 +1,27 @@
 name: "LeNet"
 layers {
-  name: "mnist"
+  name: "data"
   type: DATA
   top: "data"
-  top: "label"
   data_param {
     data_filename: "/home/cs_user/data/mnist/traindata.dat"
-    label_filename: "/home/cs_user/data/mnist/trainlabel.dat"
     backend: ATHENA_ENTRY_PLUG
     batch_size: 256
+    type: 0
   }
 }
+layers {
+  name: "label"
+  type: DATA
+  top: "label"
+  data_param {
+    data_filename: "/home/cs_user/data/mnist/trainlabel.dat"
+    backend: ATHENA_ENTRY_PLUG
+    batch_size: 256
+    type: 1
+  }
+}
+
 layers {
   name: "conv1"
   type: CONVOLUTION
@@ -113,13 +124,6 @@ layers {
       offset: 18368
     }
   }
-}
-layers {
-  name: "accuracy"
-  type: ACCURACY
-  bottom: "ip1"
-  bottom: "label"
-  top: "accuracy"
 }
 layers {
   name: "loss"

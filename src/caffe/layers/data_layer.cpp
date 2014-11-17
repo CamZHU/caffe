@@ -29,9 +29,7 @@ DataLayer<Dtype>::~DataLayer<Dtype>() {
     mdb_env_close(mdb_env_);
     break;
   case DataParameter_DB_ATHENA_ENTRY_PLUG:
-    label_file_->close();
     data_file_->close();
-    delete label_file_;
     delete data_file_;
   default:
     LOG(FATAL) << "Unknown database backend";
@@ -76,13 +74,10 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
         MDB_SUCCESS) << "mdb_cursor_get failed";
     break;
   case DataParameter_DB_ATHENA_ENTRY_PLUG:
-    LOG(INFO) << "Opening Athena Entry Plug " << this->layer_param_.data_param().data_filename() << " " << this->layer_param_.data_param().label_filename();
+    LOG(INFO) << "Opening Athena Entry Plug " << this->layer_param_.data_param().data_filename();
     data_file_ = new std::ifstream(this->layer_param_.data_param().data_filename().c_str(), ios::binary);
-    label_file_ = new std::ifstream(this->layer_param_.data_param().label_filename().c_str(), ios::binary);
     data_file_->ignore(2 * sizeof(float));
-    label_file_->ignore(2 * sizeof(float));
     CHECK(data_file_->good());
-    CHECK(label_file_->good());
     break;
   default:
     LOG(FATAL) << "Unknown database backend";
@@ -123,9 +118,15 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     datum.ParseFromArray(mdb_value_.mv_data, mdb_value_.mv_size);
     break;
   case DataParameter_DB_ATHENA_ENTRY_PLUG:
-    datum.set_channels(1);
-    datum.set_height(28);
-    datum.set_width(28);
+    if (this->layer_param_.data_param().type() == 0) {
+      datum.set_channels(1);
+      datum.set_height(28);
+      datum.set_width(28);
+    } else {
+      datum.set_channels(10);
+      datum.set_height(1);
+      datum.set_width(1);
+    }
     break;
   default:
     LOG(FATAL) << "Unknown database backend";
@@ -175,15 +176,9 @@ void DataLayer<Dtype>::InternalThreadEntry() {
 
   if (this->layer_param_.data_param().backend() == DataParameter_DB_ATHENA_ENTRY_PLUG) {
     data_file_->read(reinterpret_cast<char*>(top_data), this->prefetch_data_.count() * sizeof(Dtype));
-    label_file_->read(reinterpret_cast<char*>(top_label), this->prefetch_label_.count() * sizeof(Dtype));
     if (!data_file_->good()) {
-      CHECK(!label_file_->good());
       data_file_->seekg(2 * sizeof(Dtype));
-      label_file_->seekg(2 * sizeof(Dtype));
       data_file_->read(reinterpret_cast<char*>(top_data), this->prefetch_data_.count() * sizeof(Dtype));
-      label_file_->read(reinterpret_cast<char*>(top_label), this->prefetch_label_.count() * sizeof(Dtype));
-    } else {
-      CHECK(label_file_->good());
     }
   } else {
     for (int item_id = 0; item_id < batch_size; ++item_id) {
