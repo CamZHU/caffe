@@ -11,7 +11,7 @@ if __name__ == '__main__':
         print(len(d2))
         for i in range(len(d1)):
             try:
-                assert(d1[i] == d2[i])
+                assert(abs(d1[i] - d2[i]) < 0.0001)
             except:
                 print(i, d1[i], d2[i])
                 raise

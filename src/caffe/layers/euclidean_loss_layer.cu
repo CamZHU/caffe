@@ -28,7 +28,7 @@ void EuclideanLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   for (int i = 0; i < 2; ++i) {
     if (propagate_down[i]) {
       const Dtype sign = (i == 0) ? 1 : -1;
-      const Dtype alpha = sign * top[0]->cpu_diff()[0] / (*bottom)[i]->num();
+      const Dtype alpha = sign * top[0]->cpu_data()[0] / (*bottom)[i]->num();
       caffe_gpu_axpby(
           (*bottom)[i]->count(),              // count
           alpha,                              // alpha
